@@ -1,4 +1,6 @@
 defmodule Shopify.Config do
+  @moduledoc false
+
   @app_name :shopify
 
   def get(module \\ nil, key, default \\ nil)

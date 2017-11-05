@@ -21,3 +21,4 @@
 + Add remaining admin api resources
 + Add basic retrying mechanism (configurable) for api requests
 + Honor api limits(?)
++ Deriving param from user defined structs (_@derive_)
