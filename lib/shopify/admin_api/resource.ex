@@ -26,10 +26,10 @@ defmodule Shopify.AdminAPI.Resource do
 
   alias __MODULE__
   
-  @type t :: %__MODULE__{method: atom, path: binary, body: map, query: map}
   @type http_method :: :get | :post | :delete | :put | :patch
 
   defstruct [:method, :path, :body, :query]
+  @type t :: %__MODULE__{method: http_method, path: binary, body: binary, query: map}
 
   @spec new(params :: list) :: t
   def new(params \\ []), do: struct(__MODULE__, Map.new(params))
