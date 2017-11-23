@@ -3,21 +3,21 @@ defmodule Shopify.AdminAPI.RecurringApplicationCharge do
 
   @name "recurring_application_charges"
 
+  def get(resource),
+    do: Resource.get("#{@name}/#{to_id(resource)}")
+
   def list,
-    do: new(method: :get, path: @name)
+    do: Resource.get(@name)
 
   def create(params),
-    do: new(method: :post, body: params, path: @name)
-
-  def get(resource),
-    do: new(method: :get, path: "#{@name}/#{to_id(resource)}")
+    do: Resource.post(@name, body: params)
 
   def delete(resource),
-    do: new(method: :delete, path: "#{@name}/#{to_id(resource)}")
-
-  def activate(resource, params),
-    do: new(method: :post, path: "#{@name}/#{to_id(resource)}/activate", body: params)
+    do: Resource.delete("#{@name}/#{to_id(resource)}")
 
   def update(resource, params),
-    do: new(method: :put, path: "#{@name}/#{to_id(resource)}/customize", query: params)
+    do: Resource.put("#{@name}/#{to_id(resource)}/customize", params)
+
+  def activate(resource, params),
+    do: Resource.post("#{@name}/#{to_id(resource)}/activate", params)
 end

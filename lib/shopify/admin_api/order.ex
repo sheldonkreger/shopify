@@ -4,29 +4,29 @@ defmodule Shopify.AdminAPI.Order do
   @name "orders"
 
   def list(params \\ %{}),
-    do: new(method: :get, path: @name, query: params)
+    do: Resource.get(@name, params)
 
-  def get(resource, params \\ %{}),
-    do: new(method: :get, path: "#{@name}/#{to_id(resource)}", query: params)
+  def get(resource, query \\ %{}),
+    do: Resource.get("#{@name}/#{to_id(resource)}", query)
 
   def count(params \\ %{}),
-    do: new(method: :get, path: "#{@name}/count", query: params)
+    do: Resource.get("#{@name}/count", params)
 
   def close(resource),
-    do: new(method: :post, path: "#{@name}/#{to_id(resource)}/close")
+    do: Resource.post("#{@name}/#{to_id(resource)}/close")
 
   def open(resource),
-    do: new(method: :post, path: "#{@name}/#{to_id(resource)}/open")
+    do: Resource.post("#{@name}/#{to_id(resource)}/open")
 
   def cancel(resource, params \\ %{}),
-    do: new(method: :post, path: "#{@name}/#{to_id(resource)}/cancel", body: params)
+    do: Resource.post("#{@name}/#{to_id(resource)}/cancel", params)
 
   def create(params \\ %{}),
-    do: new(method: :post, path: @name, body: params)
+    do: Resource.post(@name, params)
 
   def update(resource, params),
-    do: new(method: :put, path: "#{@name}/#{to_id(resource)}", body: params)
+    do: Resource.put("#{@name}/#{to_id(resource)}", params)
 
   def delete(resource),
-    do: new(method: :delete, path: "#{@name}/#{to_id(resource)}")
+    do: Resource.delete("#{@name}/#{to_id(resource)}")
 end

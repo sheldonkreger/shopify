@@ -6,15 +6,28 @@ defmodule Shopify.AdminAPI.Resource do
   defmacro __using__(_opts) do
     quote do
       import Shopify.AdminAPI.Param
-      import Shopify.AdminAPI.Resource, only: [new: 1]
+      alias Shopify.AdminAPI.Resource
     end
   end
 
+  for method <- ~w(get delete)a do
+    def unquote(method)(path, query \\ nil) do
+      apply(__MODULE__, :new,
+        [[method: unquote(method), path: path, query: query]])
+    end
+  end
 
+  for method <- ~w(post put patch)a do
+    def unquote(method)(path, body \\ nil, query \\ nil) do
+      apply(__MODULE__, :new,
+        [[method: unquote(method), path: path, body: body, query: query]])
+    end
+  end
+
+  alias __MODULE__
+  
   @type t :: %__MODULE__{method: atom, path: binary, body: map, query: map}
   @type http_method :: :get | :post | :delete | :put | :patch
-
-  @methods ~w(get post delete put patch)a
 
   defstruct [:method, :path, :body, :query]
 
@@ -39,6 +52,7 @@ defmodule Shopify.AdminAPI.Resource do
   defp encode_body(body) when is_binary(body), do: body
   defp encode_body(nil), do: ""
 
+  @methods ~w(get post delete put patch)a
   defp get_method(%__MODULE__{method: method}) when method in @methods,
     do: method
   defp get_method(%__MODULE__{method: method}),

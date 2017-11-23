@@ -10,5 +10,6 @@ defimpl Shopify.AdminAPI.Token, for: Any do
 end
 
 defimpl Shopify.AdminAPI.Token, for: OAuth2.Client do
+  # TODO what if someone passes a client that does not have access token
   def extract(client), do: client.token.access_token
 end
