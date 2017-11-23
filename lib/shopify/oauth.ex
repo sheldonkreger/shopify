@@ -8,16 +8,20 @@ defmodule Shopify.Oauth do
     client_id = Config.get(opts, :client_id, [Shopify])
     client_secret = Config.get(opts, :client_secret, [Shopify])
     redirect_uri = Config.get(opts, :redirect_uri, [Shopify])
+    per_user? = opts[:per_user] || opts[:online_access_mode]
 
-    OAuth2.Client.new([
-      strategy: __MODULE__,
-      client_id: client_id,
-      client_secret: client_secret,
-      redirect_uri: redirect_uri,
-      site: shop_url,
-      authorize_url: "#{shop_url}/oauth/authorize",
-      token_url: "#{shop_url}/oauth/access_token"
-    ])
+    client =
+      OAuth2.Client.new([
+        strategy: __MODULE__,
+        client_id: client_id,
+        client_secret: client_secret,
+        redirect_uri: redirect_uri,
+        site: shop_url,
+        authorize_url: "#{shop_url}/oauth/authorize",
+        token_url: "#{shop_url}/oauth/access_token",
+      ])
+
+    if per_user?, do: %{client | params: online_access_mode_params()}, else: client
   end
 
   def authorization_url(shop, opts \\ [])
@@ -61,4 +65,6 @@ defmodule Shopify.Oauth do
     |> put_header("accept", "application/json")
     |> OAuth2.Strategy.AuthCode.get_token(params, headers)
   end
+
+  defp online_access_mode_params, do: %{"grant_options[]" => "per-user"}
 end
