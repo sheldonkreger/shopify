@@ -32,13 +32,16 @@ defmodule Shopify do
 
   ## Examples
     iex> Shopify.shop_url("myshop")
-    "https://myshop.myshopify.com"
+      "https://myshop.myshopify.com"
+
     iex> Shopify.shop_url("myshop", "{shop}.mydomain.com")
-    "https://myshop.mydomain.com"
+      "https://myshop.mydomain.com"
+
     iex> Shopify.shop_url("https://myshop.com")
-    "https://myshop.com"
+      "https://myshop.com"
+
     iex> Shopify.shop_url("myshop.com")
-    "https://myshop.com"
+      "https://myshop.com"
   """
   def shop_url(url, base_url \\ Config.get(:base_url, @default_base_url)),
     do: Utils.normalize_url(url, base_url)
