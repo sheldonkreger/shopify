@@ -4,8 +4,8 @@ defmodule Shopify.Oauth do
   use OAuth2.Strategy
   alias Shopify.Config
 
-  def client(shop, opts \\ []) when is_binary(shop) do
-    shop_url = shop <> "/admin"
+  def client(shop_url, opts \\ []) when is_binary(shop) do
+    url = shop_url <> "/admin"
     client_id = Config.from(opts, :client_id)
     client_secret = Config.from(opts, :client_secret)
     redirect_uri = Config.from(opts, :redirect_uri)
@@ -17,9 +17,9 @@ defmodule Shopify.Oauth do
         client_id: client_id,
         client_secret: client_secret,
         redirect_uri: redirect_uri,
-        site: shop_url,
-        authorize_url: "#{shop_url}/oauth/authorize",
-        token_url: "#{shop_url}/oauth/access_token",
+        site: url,
+        authorize_url: "#{url}/oauth/authorize",
+        token_url: "#{url}/oauth/access_token",
       ])
 
     if per_user?, do: %{client | params: online_access_mode_params()}, else: client
