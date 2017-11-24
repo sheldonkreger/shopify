@@ -10,7 +10,7 @@ defmodule Shopify.AdminAPI.RecurringApplicationCharge do
     do: Resource.get(@name)
 
   def create(params),
-    do: Resource.post(@name, body: params)
+    do: Resource.post(@name, params)
 
   def delete(resource),
     do: Resource.delete("#{@name}/#{to_id(resource)}")

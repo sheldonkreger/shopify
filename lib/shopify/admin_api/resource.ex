@@ -36,13 +36,14 @@ defmodule Shopify.AdminAPI.Resource do
   def prepare(resource = %__MODULE__{}) do
     %{
       method: get_method(resource),
-      path: "/admin/" <> to_path(resource),
+      path: to_path(resource),
       body: encode_body(resource.body)
     }
   end
 
   @spec to_path(resource :: t) :: binary
   def to_path(%__MODULE__{path: path, query: query}) do
+    path = "/admin/" <> String.trim(path, "/")
     to_string(%URI{path: path <> ".json", query: to_query(query)})
   end
 
