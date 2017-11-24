@@ -3,6 +3,8 @@ defmodule Shopify.Utils do
 
   alias Shopify.Config
 
+  @default_base_url "{shop}.myshopify.com"
+
   @doc """
   Uses base url (default is "{shop}.myshopify.com" and configurable in config.exs)
   or provided, in form of "{shop}.localhost" to construct shop url
@@ -12,7 +14,7 @@ defmodule Shopify.Utils do
     iex> Shopify.Utils.shop_url("sysashi", "{shop}.mydomain.com")
     "https://sysashi.mydomain.com"
   """
-  def shop_url(shop, nil), do: shop_url(shop, Config.get(Shopify, :base_url, ""))
+  def shop_url(shop, nil), do: shop_url(shop, Config.get(:base_url, @default_base_url))
   def shop_url(shop, base_url) when is_binary(shop) and is_binary(base_url) do
     unless String.starts_with?(base_url, "{shop}") do
       raise "Base url have to start with \"{shop}\", got: #{inspect base_url}"

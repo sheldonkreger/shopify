@@ -1,10 +1,20 @@
 defmodule Shopify.Request do
+  alias Shopify.Config
+
   def request(method, url, body, headers, config) do
-    default = Shopify.Request.HttpClient
-    |> Shopify.Config.get
-    |> Map.new
-    config = Map.merge(default, config)
-    http_opts = Map.get(config, :http_opts, [])
-    config.adapter.request(method, url, body, headers, http_opts)
+    config = get_adapter_and_opts(config)
+    config.adapter.request(method, url, body, headers, config.http_opts)
+  end
+
+  defp get_adapter_and_opts(config) do
+    adapter =
+      config[:adapter]
+      || Config.get(Shopify.Request.HttpClient, [])[:adapter]
+      || Shopify.Request.Hackney
+    http_opts =
+      config[:http_opts]
+      || Config.get(Shopify.Request.HttpClient, [])[:http_opts]
+      || []
+    %{adapter: adapter, http_opts: http_opts}
   end
 end

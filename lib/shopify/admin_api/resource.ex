@@ -24,17 +24,15 @@ defmodule Shopify.AdminAPI.Resource do
     end
   end
 
-  alias __MODULE__
-  
-  @type http_method :: :get | :post | :delete | :put | :patch
+  @typep method :: Shopify.Request.HttpClient.http_method
 
   defstruct [:method, :path, :body, :query]
-  @type t :: %__MODULE__{method: http_method, path: binary, body: binary, query: map}
+  @type t :: %__MODULE__{method: method, path: binary, body: binary, query: map}
 
   @spec new(params :: list) :: t
   def new(params \\ []), do: struct(__MODULE__, Map.new(params))
 
-  @spec prepare(resource :: t) :: %{method: http_method, body: binary, path: binary}
+  @spec prepare(resource :: t) :: %{method: method, body: binary, path: binary}
   def prepare(resource = %__MODULE__{}) do
     %{
       method: get_method(resource),

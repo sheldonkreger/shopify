@@ -9,12 +9,11 @@ defmodule Shopify do
 
   # TODO add simple and configurable retrying functionality
 
-  def request(resource = %AdminAPI.Resource{}, shop_url, user, headers \\ [], opts \\ []) do
+  def request(resource = %AdminAPI.Resource{}, shop_url, user, headers \\ [], config \\ []) do
     params = AdminAPI.Resource.prepare(resource)
     url = url(shop_url, params.path)
     headers = headers(user, headers)
-    adapter = opts[:http] || %{} # TODO
-    case Request.request(params.method, url, params.body, headers, adapter) do
+    case Request.request(params.method, url, params.body, headers, config) do
       {:ok, resp = %{status_code: code, body: body}} when code in 200..299 ->
         {:ok, %{resp | body: Poison.decode!(body)}}
       {:ok, resp = %{body: body}} ->

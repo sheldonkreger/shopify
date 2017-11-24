@@ -23,6 +23,10 @@
 + Honor api limits(?) -> _move to framework_
 + Deriving param from user defined structs (_@derive_)
 
+### Config
+
++ (thoughts) ex_aws keeps default config in a module [defaults.ex](https://github.com/ex-aws/ex_aws/blob/master/lib/ex_aws/config/defaults.ex)
+
 ## Extra libraries
 
 + Token storage [shop_id(url) -> token and metadata] + expiration mechanism

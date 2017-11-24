@@ -1,13 +1,14 @@
 defmodule Shopify.Oauth do
   @behaviour OAuth2.Strategy
-  use OAuth2.Strategy
-  alias Shopify.{Utils, Config}
 
-  def client(shop, opts \\ []) do
-    shop_url = Utils.shop_url(shop) <> "/admin"
-    client_id = Config.get(opts, :client_id, [Shopify])
-    client_secret = Config.get(opts, :client_secret, [Shopify])
-    redirect_uri = Config.get(opts, :redirect_uri, [Shopify])
+  use OAuth2.Strategy
+  alias Shopify.Config
+
+  def client(shop, opts \\ []) when is_binary(shop) do
+    shop_url = shop <> "/admin"
+    client_id = Config.from(opts, :client_id)
+    client_secret = Config.from(opts, :client_secret)
+    redirect_uri = Config.from(opts, :redirect_uri)
     per_user? = opts[:per_user] || opts[:online_access_mode]
 
     client =
@@ -26,23 +27,20 @@ defmodule Shopify.Oauth do
 
   def authorization_url(shop, opts \\ [])
   def authorization_url(shop, opts) when is_binary(shop) do
-    scope = Config.get(opts, :scope, [Shopify])
     client(shop, opts)
-    |> put_param(:scope, scope)
+    |> put_param(:scope, Config.from(opts, :scope))
     |> OAuth2.Client.authorize_url!
   end
   def authorization_url(client = %OAuth2.Client{}, opts) do
-    scope = Config.get(opts, :scope, [Shopify])
     client
-    |> put_param(:scope, scope)
+    |> put_param(:scope, Config.from(opts, :scope))
     |> OAuth2.Client.authorize_url!
   end
 
   def get_access_token(shop, opts \\ [])
   def get_access_token(shop, opts) when is_binary(shop) do
-    client_secret = Config.get(opts, :client_secret, [Shopify])
     client(shop, opts)
-    |> put_param(:client_secret, client_secret)
+    |> put_param(:client_secret, Config.from(opts, :client_secret))
     |> put_param(:code, opts[:code])
     |> OAuth2.Client.get_token
   end
