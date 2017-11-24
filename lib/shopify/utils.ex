@@ -3,10 +3,6 @@ defmodule Shopify.Utils do
 
   alias Shopify.Config
 
-  # argument to this function could be
-  # in form of {http | https}://<host> or just <host>
-  def shop_url(url), do: normalize_url(url)
-
   @doc """
   Uses base url (default is "{shop}.myshopify.com" and configurable in config.exs)
   or provided, in form of "{shop}.localhost" to construct shop url
@@ -24,6 +20,10 @@ defmodule Shopify.Utils do
     to_string(%URI{scheme: "https", host: String.replace(base_url, "{shop}", shop)})
   end
 
+  # argument to this function could be
+  # in form of {http | https}://<host> or just <host>
+  def shop_url(url), do: normalize_url(url)
+
   defp normalize_url("http://" <> _ = url),  do: url
   defp normalize_url("https://" <> _ = url), do: url
   defp normalize_url(url) do
@@ -33,9 +33,4 @@ defmodule Shopify.Utils do
       shop_url(url, nil)
     end
   end
-
-  @spec make_path(resource_name :: binary,
-                  Shopify.AdminAPI.Param.t,
-                  action :: binary) :: binary
-  def make_path(resource_name, resource, action), do: ""
 end
