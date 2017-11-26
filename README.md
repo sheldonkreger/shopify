@@ -5,7 +5,7 @@
 * Create an authorization url
 
 ```
-iex> shop = "https://myshop.myshopify.com"
+iex> shop = "https://myshop.myshopify.com" # or Shopify.shop_url("myshop")
 iex> params = [client_id: <id>, client_secret: <secret>, redirect_uri: <uri>, scope: <scope>]
 iex> Shopify.Oauth.authorization_url(shop, params)
 ```
