@@ -9,9 +9,9 @@ iex> shop = "https://myshop.myshopify.com"
 iex> params = [client_id: <id>, client_secret: <secret>, redirect_uri: <uri>, scope: <scope>]
 iex> Shopify.Oauth.authorization_url(shop, params)
 ```
-* Once you've recieved a request to your `<uri>`, you can verify it with helper functions in `Shopify.Auth` module, and then extract `code` which is required for obtaining `Token`
+* Once you've recieved a request to your `<uri>`, you can verify it with helper functions from `Shopify.Auth` module, and then extract `code` which is required for obtaining `Token`
 
-* Gen token
+* Get token
 ```
 iex> {:ok, client} = Shopify.Oauth.get_access_token(shop, Keyword.put(params, :code, <code from request>))
 ```
