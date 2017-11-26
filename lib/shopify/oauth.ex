@@ -9,7 +9,7 @@ defmodule Shopify.Oauth do
     client_id = Config.from(opts, :client_id)
     client_secret = Config.from(opts, :client_secret)
     redirect_uri = Config.from(opts, :redirect_uri)
-    per_user? = opts[:per_user] || opts[:online_access_mode]
+    scope = Config.from(opts, :scope, "")
 
     client =
       OAuth2.Client.new([
@@ -18,29 +18,27 @@ defmodule Shopify.Oauth do
         client_secret: client_secret,
         redirect_uri: redirect_uri,
         site: url,
+        params: %{"scope" => scope},
         authorize_url: "#{url}/oauth/authorize",
         token_url: "#{url}/oauth/access_token",
       ])
 
-    if per_user?, do: %{client | params: online_access_mode_params()}, else: client
+    %{client | params: get_extra_params(opts, client.params)}
   end
 
   def authorization_url(shop, opts \\ [])
   def authorization_url(shop, opts) when is_binary(shop) do
     client(shop, opts)
-    |> put_param(:scope, Config.from(opts, :scope))
     |> OAuth2.Client.authorize_url!
   end
-  def authorization_url(client = %OAuth2.Client{}, opts) do
+  def authorization_url(client = %OAuth2.Client{}, _opts) do
     client
-    |> put_param(:scope, Config.from(opts, :scope))
     |> OAuth2.Client.authorize_url!
   end
 
   def get_access_token(shop, opts \\ [])
   def get_access_token(shop, opts) when is_binary(shop) do
     client(shop, opts)
-    |> put_param(:client_secret, Config.from(opts, :client_secret))
     |> put_param(:code, opts[:code])
     |> OAuth2.Client.get_token
   end
@@ -64,5 +62,12 @@ defmodule Shopify.Oauth do
     |> OAuth2.Strategy.AuthCode.get_token(params, headers)
   end
 
-  defp online_access_mode_params, do: %{"grant_options[]" => "per-user"}
+  defp get_extra_params(opts, params) do
+    Enum.reduce(opts, params, fn
+      {opt, _}, params when opt in ~w(per_user online_access_mode)a ->
+        Map.put_new(params, "grant_options[]", "per-user")
+      _, params ->
+        params
+    end)
+  end
 end

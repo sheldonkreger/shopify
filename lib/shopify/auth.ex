@@ -36,9 +36,7 @@ defmodule Shopify.Auth do
   end
 
   # TODO
-  def validate_webhook_hmac(hmac, data, secret) do
-    raise "Not implemented yet!"
-  end
+  def validate_webhook_hmac(hmac, data, secret)
 
   # TODO constant time comparison
   defp secure_compare(arg1, arg2) do
