@@ -19,7 +19,8 @@ defmodule Shopify.Mixfile do
     [
       {:oauth2, "~> 0.9"},
       {:poison, "~> 3.1", override: true},
-      {:hackney, "1.6.6 or 1.7.1 or 1.8.6 or ~> 1.9", optional: true}
+      {:hackney, "1.6.6 or 1.7.1 or 1.8.6 or ~> 1.9", optional: true},
+      {:inflex, "~> 1.8.1"}
     ]
   end
 end

@@ -23,6 +23,10 @@
 + Honor api limits(?) -> _move to framework_
 + Deriving param from user defined structs (_@derive_)
 
++ Metaprogramming: Support collection and only | excpet params
+! some PUT methods dont require body but rather query (see RecurringApplicationCharge PUT)
+! this query has arrays and such (e.g. `PUT /admin/recurring_application_charges/#{id}/customize.json?recurring_application_charge[capped_amount]=200`)
+
 ### Config
 
 + (thoughts) ex_aws keeps default config in a module [defaults.ex](https://github.com/ex-aws/ex_aws/blob/master/lib/ex_aws/config/defaults.ex)

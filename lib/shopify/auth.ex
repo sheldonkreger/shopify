@@ -39,11 +39,22 @@ defmodule Shopify.Auth do
   def validate_webhook_hmac(hmac, data, secret)
 
   # TODO constant time comparison
-  defp secure_compare(arg1, arg2) do
-    arg1 == arg2
+  def secure_compare(arg1, arg2) when byte_size(arg1) != byte_size(arg2),
+    do: false
+  def secure_compare(arg1, arg2) do
+    a = String.to_charlist(arg1)
+    b = String.to_charlist(arg2)
+    total =
+      Enum.reduce(Enum.zip(a, b), 0, fn {b1, b2}, total ->
+        if b1 == b2 do
+          total + 1
+        else
+          total
+        end
+      end)
+    total == length(a)
   end
 
-  # TODO ensure this sorting is lexicographical or make it such
   defp sort(data) when is_binary(data) do
     data
     |> String.split("&")
