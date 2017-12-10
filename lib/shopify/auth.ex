@@ -9,6 +9,8 @@ defmodule Shopify.Auth do
     |> Base.encode16(case: :lower)
   end
 
+  # TODO ensure that hostname does not does not contain characters
+  # other than letters (a-z), numbers (0-9), dots, and hyphens.
   @valid_hostname "myshopify.com"
   def validate_hostname(hostname) when is_binary(hostname) do
     String.ends_with?(hostname, @valid_hostname)
@@ -39,9 +41,9 @@ defmodule Shopify.Auth do
   def validate_webhook_hmac(hmac, data, secret)
 
   # TODO constant time comparison
-  def secure_compare(arg1, arg2) when byte_size(arg1) != byte_size(arg2),
+  defp secure_compare(arg1, arg2) when byte_size(arg1) != byte_size(arg2),
     do: false
-  def secure_compare(arg1, arg2) do
+  defp secure_compare(arg1, arg2) do
     a = String.to_charlist(arg1)
     b = String.to_charlist(arg2)
     total =

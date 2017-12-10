@@ -21,7 +21,6 @@ defmodule Shopify do
     |> handle_response(opts, resource.name)
   end
 
-
   # TODO use same option for parsing error
   defp handle_response({:ok, resp = %{status_code: code, body: body}}, opts, name)
   when code in 200..299 do
