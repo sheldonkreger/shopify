@@ -10,13 +10,24 @@ defmodule Shopify do
 
   defp default_options, do: [resource_only: true]
 
-  def request(resource = %AdminAPI.Resource{}, client = %OAuth2.Client{}, opts \\ [], headers \\ [], config \\ []) do
-    params = AdminAPI.Resource.prepare(resource)
-    url = client.site <> "/" <> params.path # TODO
+  def request(resource, client, opts \\ [], headers \\ [], config \\ [])
+
+  def request(resource = %AdminAPI.Resource{}, client = %OAuth2.Client{}, opts, headers, config) do
+    make_request(resource, client, client.site, opts, headers, config)
+  end
+
+  def request(resource = %AdminAPI.Resource{}, {url, token}, opts, headers, config)
+    when is_binary(url) do
+    url = String.trim_trailing(url, "/") <> "/admin"
+    make_request(resource, token, url, opts, headers, config)
+  end
+
+  defp make_request(resource, client, url, opts, headers, config) do
     headers = headers(client, headers)
+    params = AdminAPI.Resource.prepare(resource)
+    url = url <> "/" <> params.path
     opts = Keyword.merge(default_options(), opts)
 
-    IO.inspect {params, url}
     Request.request(params.method, url, params.body, headers, config)
     |> handle_response(opts, resource.name)
   end
@@ -43,8 +54,8 @@ defmodule Shopify do
     case parse_body(body, nil) do
       {:ok, body} ->
         {:error, %{resp | body: body}}
-      {:decoding_error, _reason} ->
-        {:error, resp}
+      {:decoding_error, reason} ->
+        {:decoding_error, reason, resp}
     end
   end
 
@@ -57,6 +68,8 @@ defmodule Shopify do
       {:ok, body} ->
         {:ok, body[resource_name] || body}
       {:error, reason} ->
+        {:decoding_error, reason}
+      {:error, reason, _code} -> # mistake in documentation? 
         {:decoding_error, reason}
     end
   end

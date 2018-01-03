@@ -4,6 +4,11 @@ defmodule Shopify.Oauth do
   use OAuth2.Strategy
   alias Shopify.Config
 
+  # QUESTION do we really need this library, because all it does is
+  # 1. creating authorization_url
+  # 2. making request to get the token
+  # 3. refreshing the token (not implemented yet for users)
+
   def client(shop_url, opts \\ []) when is_binary(shop_url) do
     url = shop_url <> "/admin"
     client_id = Config.from(opts, :client_id)

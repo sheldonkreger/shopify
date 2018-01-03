@@ -3,6 +3,9 @@ defmodule Shopify.AdminAPI.Resource.Verbs do
 
   @moduledoc false
 
+  # TODO verb `count` is also met frequently in resources
+  # consider adding option for it
+
   @default_verbs [:all, :get, :create, :update, :delete]
   defmacro generate(opts) do
     resource = Keyword.fetch!(opts, :name)

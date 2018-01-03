@@ -1,0 +1,11 @@
+all ->      (params),                        path -> resource 
+all ->      (collection, params)             path -> collection, cid, resource
+create ->   (params),                        path -> resource
+create ->   (collection, params)             path -> collection, cid, resource
+
+get ->      (resource, params),              path -> resource, rid
+get ->      (collection, resource, params),  path -> collection, cid, resource, rid
+update ->   (resource, params)               path -> resource, rid
+update ->   (collection, resource, params)   path -> collection, cid, resource, rid
+delete ->   (resource, params)               path -> resource, rid
+delete ->   (collection, resource, params)   path -> collection, cid, resource, rid
