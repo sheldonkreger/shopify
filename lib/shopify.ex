@@ -84,6 +84,9 @@ defmodule Shopify do
     iex> Shopify.shop_url("myshop")
     "https://myshop.myshopify.com"
 
+    iex> Shopify.shop_url("myshop.myshopify.com")
+    "https://myshop.myshopify.com"
+
     iex> Shopify.shop_url("myshop", "https://{shop}.mydomain.com")
     "https://myshop.mydomain.com"
 
