@@ -18,8 +18,7 @@ defmodule Shopify do
 
   def request(resource = %AdminAPI.Resource{}, {url, token}, opts, headers, config)
     when is_binary(url) do
-    url = String.trim_trailing(url, "/") <> "/admin"
-    make_request(resource, token, url, opts, headers, config)
+    make_request(resource, token, shop_admin_url(url), opts, headers, config)
   end
 
   defp make_request(resource, client, url, opts, headers, config) do
@@ -74,28 +73,32 @@ defmodule Shopify do
     end
   end
 
-  @default_base_url "{shop}.myshopify.com"
+  @default_base_url "https://{shop}.myshopify.com"
   @doc """
-  Normalizes url, otherwise uses base url, defaults to "{shop}.myshopify.com"
+  Normalizes url, otherwise uses base url, defaults to "https://{shop}.myshopify.com"
   and configurable in config.exs:
 
-  config :shopify, base_url: "{shop}.example.com"
+  config :shopify, base_url: "https://{shop}.example.com"
 
   ## Examples
     iex> Shopify.shop_url("myshop")
-      "https://myshop.myshopify.com"
+    "https://myshop.myshopify.com"
 
-    iex> Shopify.shop_url("myshop", "{shop}.mydomain.com")
-      "https://myshop.mydomain.com"
+    iex> Shopify.shop_url("myshop", "https://{shop}.mydomain.com")
+    "https://myshop.mydomain.com"
 
     iex> Shopify.shop_url("https://myshop.com")
-      "https://myshop.com"
-
-    iex> Shopify.shop_url("myshop.com")
-      "https://myshop.com"
+    "https://myshop.com"
   """
   def shop_url(url, base_url \\ Config.get(:base_url, @default_base_url)),
     do: Utils.normalize_url(url, base_url)
+
+  def shop_admin_url(url) do
+    url
+    |> String.trim_trailing("/")
+    |> shop_url()
+    |> Kernel.<>("/admin")
+  end
 
   # FIXME function below should be concern of AdminAPI context
   defp headers(client, headers),

@@ -5,13 +5,17 @@ defmodule Shopify.Utils do
   def normalize_url("http://" <> _ = url, _),  do: url
   def normalize_url("https://" <> _ = url, _), do: url
   def normalize_url(url, base_url) do
-    if String.contains?(url, ".") do
-      "https://" <> url
+    if valid_base_url?(base_url) do
+      String.replace(base_url, "{shop}", url, global: :false)
     else
-      unless String.contains?(base_url, "{shop}") do
-        raise "Base url have to contain placeholder \"{shop}\", got: #{inspect base_url}"
-      end
-      to_string(%URI{scheme: "https", host: String.replace(base_url, "{shop}", url)})
+      raise ArgumentError,
+        "Base url have to contain placeholder '{shop}' and starts with a schema " <>
+        "(http|https), got: #{inspect base_url}"
     end
+  end
+
+  @has_schema ~r/https?:\/\//
+  defp valid_base_url?(base) do
+    Regex.match?(@has_schema, base) and String.contains?(base, "{shop}")
   end
 end
