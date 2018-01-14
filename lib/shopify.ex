@@ -105,7 +105,9 @@ defmodule Shopify do
 
   # FIXME function below should be concern of AdminAPI context
   defp headers(client, headers),
-    do: [auth_header(client), {"accept", "application/json"} | headers]
+    do: [auth_header(client),
+        {"accept", "application/json"},
+        {"content-type", "application/json"} | headers]
 
   defp auth_header(client),
     do: {"X-Shopify-Access-Token", AdminAPI.Token.extract(client)}
