@@ -5,56 +5,32 @@ defmodule Shopify do
     AdminAPI,
     Utils,
     Request,
-    Config
+    Config,
   }
 
-  defp default_options, do: [resource_only: true]
+  @default_options [resource_only: true]
 
-  def request(resource, client, opts \\ [], headers \\ [], config \\ [])
-
-  def request(resource = %AdminAPI.Resource{}, client = %OAuth2.Client{}, opts, headers, config) do
-    make_request(resource, client, client.site, opts, headers, config)
-  end
-
-  def request(resource = %AdminAPI.Resource{}, {url, token}, opts, headers, config)
-    when is_binary(url) do
-    make_request(resource, token, shop_admin_url(url), opts, headers, config)
-  end
-
-  defp make_request(resource, client, url, opts, headers, config) do
-    headers = headers(client, headers)
-    params = AdminAPI.Resource.prepare(resource)
-    url = url <> "/" <> params.path
-    opts = Keyword.merge(default_options(), opts)
-
-    Request.request(params.method, url, params.body, headers, config)
-    |> handle_response(opts, resource.name)
+  def request(resource = %AdminAPI.Resource{}, client, opts \\ [], headers \\ [], config \\ []) do
+    req = AdminAPI.Resource.prepare(resource)
+    opts = Keyword.merge(@default_options, opts)
+    credentials = AdminAPI.Credentials.extract(client)
+    headers = headers(credentials.token, headers)
+    url = shop_admin_url(credentials.url) <> "/" <> req.path
+    Request.request(req.method, url, req.body, headers, config) |> handle_response(resource.name, opts)
   end
 
   # TODO use same option for parsing error
-  defp handle_response({:ok, resp = %{status_code: code, body: body}}, opts, name)
+  defp handle_response({:ok, resp = %{status_code: code}}, name, opts)
   when code in 200..299 do
-    cond do
-      opts[:raw_response] ->
-        {:ok, resp}
-      opts[:resource_only] ->
-        parse_body(body, name)
-      true ->
-        case parse_body(body, nil) do
-          {:ok, body} ->
-            {:ok, %{resp | body: body}}
-          {:decoding_error, reason} ->
-            {:decoding_error, reason, resp}
-        end
-    end
+    parse_body(resp, name, opts)
   end
 
-  defp handle_response({:ok, resp = %{body: body}}, _opts, _name) do
-    case parse_body(body, nil) do
-      {:ok, body} ->
-        {:error, %{resp | body: body}}
-      {:decoding_error, reason} ->
-        {:decoding_error, reason, resp}
+  defp handle_response({:ok, resp}, name, opts) do
+    case parse_body(resp, name, opts) do
+      {:ok, resp_or_body} ->
+        {:error, resp_or_body}
+      other ->
+        other
     end
   end
 
@@ -62,14 +38,27 @@ defmodule Shopify do
     {:http_error, reason}
   end
 
-  defp parse_body(body, resource_name) do
-    case Poison.decode(body) do
-      {:ok, body} ->
-        {:ok, body[resource_name] || body}
+  defp parse_body(resp, name, opts) do
+    with \
+      {:ok, body} <- Poison.decode(resp.body),
+      resp_or_body <- apply_options(resp, body, name, opts) do
+        {:ok, resp_or_body}
+    else
       {:error, reason} ->
         {:decoding_error, reason}
       {:error, reason, _code} -> # mistake in documentation? 
         {:decoding_error, reason}
+    end
+  end
+
+  defp apply_options(resp, body, name, opts) do
+    cond do
+      opts[:raw_response] ->
+        resp
+      opts[:resource_only] ->
+        body[name] || body
+      true ->
+        resp
     end
   end
 
@@ -97,18 +86,21 @@ defmodule Shopify do
     do: Utils.normalize_url(url, base_url)
 
   def shop_admin_url(url) do
-    url
-    |> String.trim_trailing("/")
-    |> shop_url()
-    |> Kernel.<>("/admin")
+    if String.ends_with?(url, "/admin") do
+      url
+    else
+      url
+      |> String.trim_trailing("/")
+      |> shop_url()
+      |> Kernel.<>("/admin")
+    end
   end
 
   # FIXME function below should be concern of AdminAPI context
-  defp headers(client, headers),
-    do: [auth_header(client),
+  defp headers(token, headers),
+    do: [auth_header(token),
         {"accept", "application/json"},
         {"content-type", "application/json"} | headers]
 
-  defp auth_header(client),
-    do: {"X-Shopify-Access-Token", AdminAPI.Token.extract(client)}
+  defp auth_header(token), do: {"X-Shopify-Access-Token", token}
 end
