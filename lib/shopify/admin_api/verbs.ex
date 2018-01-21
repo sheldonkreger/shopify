@@ -1,5 +1,6 @@
 defmodule Shopify.AdminAPI.Resource.Verbs do
   alias Shopify.AdminAPI.Resource
+  import Inflex, only: [pluralize: 1]
 
   @moduledoc false
 
@@ -8,22 +9,23 @@ defmodule Shopify.AdminAPI.Resource.Verbs do
 
   @default_verbs [:all, :get, :create, :update, :delete]
   defmacro generate(opts) do
-    resource = Keyword.fetch!(opts, :name)
-    collection = Keyword.get(opts, :collection)
     verbs = Keyword.get(opts, :only, @default_verbs)
-
-    Module.put_attribute(__CALLER__.module, :resource, Inflex.pluralize(resource))
-    Module.put_attribute(__CALLER__.module, :collection, Inflex.pluralize(collection))
-
     unless valid_verbs?(verbs, @default_verbs) do
       raise ArgumentError, "option 'only' should be a list and supports " <>
                            "following functions #{inspect @default_verbs}, got #{inspect verbs}"
     end
 
+    name = Keyword.fetch!(opts, :name)
+    collection = Keyword.get(opts, :collection)
+
+    for {attr, value} <- attributes(name, collection) do
+      Module.put_attribute(__CALLER__.module, attr, value)
+    end
+
     for verb <- verbs do
-      {verb_args, method_args} = args(verb, resource, collection)
+      {verb_args, method_args} = args(verb, name, collection)
       method = verb_method(verb)
-      name = name(verb, resource)
+      name = name(verb, name)
       params_to = params_to(verb)
       query_or_body = Macro.var(params_to, __MODULE__)
       quote do
@@ -37,6 +39,10 @@ defmodule Shopify.AdminAPI.Resource.Verbs do
     end
   end
 
+  defp attributes(name, collection) do
+    [{:pname, pluralize(name)}, {:pcoll, pluralize(collection)}, {:name, name}]
+  end
+
   defp args(verb, resource, collection) when verb in ~w(get update delete)a do
     {resource, resource_args} = create_vars(resource)
     if collection do
@@ -48,7 +54,7 @@ defmodule Shopify.AdminAPI.Resource.Verbs do
   end
 
   defp args(verb, resource, collection) when verb in ~w(all create)a do
-    resource_path = Inflex.pluralize(resource)
+    resource_path = pluralize(resource)
     if collection do
       {collection, collection_args} = create_vars(collection)
       {[collection], collection_args ++ [resource_path]}
@@ -59,7 +65,7 @@ defmodule Shopify.AdminAPI.Resource.Verbs do
 
   defp create_vars(arg) do
     pretty_name = Macro.var(String.to_atom(arg), __MODULE__)
-    {pretty_name, [Inflex.pluralize(arg), quote do to_id(unquote(pretty_name)) end]}
+    {pretty_name, [pluralize(arg), quote do to_id(unquote(pretty_name)) end]}
   end
 
   defp valid_verbs?(provided, default) do
@@ -72,7 +78,7 @@ defmodule Shopify.AdminAPI.Resource.Verbs do
   defp verb_method(:update), do: :put
   defp verb_method(:delete), do: :delete
 
-  defp name(:all, resource), do: Inflex.pluralize(resource)
+  defp name(:all, resource), do: pluralize(resource)
   defp name(_, resource),    do: resource
 
   defp params_to(verb) when verb in ~w(create update delete)a, do: :body

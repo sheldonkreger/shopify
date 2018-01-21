@@ -2,14 +2,14 @@ defmodule Shopify.AdminAPI.Order do
   use Shopify.AdminAPI.Resource, name: "order"
 
   def count(params \\ %{}),
-    do: Resource.get([@resource, "count"], query: params, name: "count")
+    do: Resource.get([@pname, "count"], query: params, name: "count")
 
   def close(order),
-    do: Resource.post([@resource, to_id(order), "close"])
+    do: Resource.post([@pname, to_id(order), "close"], name: @name)
 
   def open(order),
-    do: Resource.post([@resource, to_id(order), "open"])
+    do: Resource.post([@pname, to_id(order), "open"], name: @name)
 
   def cancel(order, params \\ %{}),
-    do: Resource.post([@resource, to_id(order), "cancel"], body: params)
+    do: Resource.post([@pname, to_id(order), "cancel"], name: @name, body: params)
 end
