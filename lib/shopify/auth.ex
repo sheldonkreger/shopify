@@ -17,7 +17,7 @@ defmodule Shopify.Auth do
   end
 
   @spec validate_oauth_hmac(%{"hmac": binary}, secret :: binary) :: boolean
-  def validate_oauth_hmac(data, secret) when is_map(data) do
+  def validate_oauth_hmac(data = %{"hmac" => _}, secret) do
     {hmac, data} = Map.pop(data, "hmac")
     validate_oauth_hmac(hmac, data, secret)
   end
@@ -26,19 +26,16 @@ defmodule Shopify.Auth do
     :: boolean
   def validate_oauth_hmac(hmac, data, secret) when is_map(data) do
     data = data |> URI.encode_query |> sort()
-    validate_oauth_hmac(hmac, data, secret)
+    validate_hmac(hmac, data, secret)
   end
 
-  def validate_oauth_hmac(hmac, data, secret)
+  def validate_hmac(hmac, data, secret)
       when is_binary(hmac) and
       is_binary(data) and
       is_binary(secret) do
     computed = Base.encode16(:crypto.hmac(:sha256, secret, data), case: :lower)
     secure_compare(computed, hmac)
   end
-
-  # TODO
-  def validate_webhook_hmac(hmac, data, secret)
 
   # TODO constant time comparison
   defp secure_compare(arg1, arg2) when byte_size(arg1) != byte_size(arg2),
