@@ -10,18 +10,24 @@ defmodule Shopify.AdminAPI.Resource.Verbs do
   @default_verbs [:all, :get, :create, :update, :delete]
   defmacro generate(opts) do
     verbs = Keyword.get(opts, :only, @default_verbs)
+
     unless valid_verbs?(verbs, @default_verbs) do
       raise ArgumentError, "option 'only' should be a list and supports " <>
-                           "following functions #{inspect @default_verbs}, got #{inspect verbs}"
+                           "following verbs #{inspect @default_verbs}, got #{inspect verbs}"
     end
 
     name = Keyword.fetch!(opts, :name)
     collection = Keyword.get(opts, :collection)
 
-    for {attr, value} <- attributes(name, collection) do
-      Module.put_attribute(__CALLER__.module, attr, value)
+    quote do
+      @pname unquote(pluralize(name))
+      @pcoll unquote(pluralize(collection))
+      @name  unquote(name)
+      unquote(make_verbs(verbs, name, collection))
     end
+  end
 
+  defp make_verbs(verbs, name, collection) do
     for verb <- verbs do
       {verb_args, method_args} = args(verb, name, collection)
       method = verb_method(verb)
@@ -37,10 +43,6 @@ defmodule Shopify.AdminAPI.Resource.Verbs do
         end
       end
     end
-  end
-
-  defp attributes(name, collection) do
-    [{:pname, pluralize(name)}, {:pcoll, pluralize(collection)}, {:name, name}]
   end
 
   defp args(verb, resource, collection) when verb in ~w(get update delete)a do
