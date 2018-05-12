@@ -10,6 +10,15 @@ defmodule Shopify do
 
   @default_options [resource_only: true]
 
+  @spec request(
+    resource :: AdminAPI.Resource.t,
+    client :: AdminAPI.Credentials.t,
+    opts :: keyword,
+    headers :: [tuple],
+    config :: keyword) :: {:ok, data :: map}
+                        | {:error, reason :: any}
+                        | {:http_error, reason :: any}
+                        | {:decoding_error, reason :: any}
   def request(resource = %AdminAPI.Resource{}, client, opts \\ [], headers \\ [], config \\ []) do
     req = AdminAPI.Resource.prepare(resource)
     opts = Keyword.merge(@default_options, opts)
@@ -25,6 +34,7 @@ defmodule Shopify do
     parse_body(resp, name, opts)
   end
 
+  # when status code is not in 200..299 we treat it as an error
   defp handle_response({:ok, resp}, name, opts) do
     case parse_body(resp, name, opts) do
       {:ok, resp_or_body} ->
