@@ -25,7 +25,7 @@ defmodule Shopify.Auth do
   @spec validate_oauth_hmac(hmac :: binary, data :: binary | map, secret :: binary)
     :: boolean
   def validate_oauth_hmac(hmac, data, secret) when is_map(data) do
-    data = data |> URI.encode_query |> sort()
+    data = data |> Enum.sort() |> Enum.map(fn {k, v} -> "#{k}=#{v}" end) |> Enum.join("&")
     validate_hmac(hmac, data, secret)
   end
 
