@@ -16,6 +16,11 @@ defmodule Shopify.Auth do
     String.ends_with?(hostname, @valid_hostname)
   end
 
+  @spec validate_webhook_hmac(hmac :: binary, body :: binary, secret :: binary) :: boolean
+  def validate_webhook_hmac(hmac, body, secret) do
+    validate_hmac(hmac, body, secret, &Base.encode64/1)
+  end
+
   @spec validate_oauth_hmac(%{"hmac": binary}, secret :: binary) :: boolean
   def validate_oauth_hmac(data = %{"hmac" => _}, secret) do
     {hmac, data} = Map.pop(data, "hmac")
@@ -26,14 +31,14 @@ defmodule Shopify.Auth do
     :: boolean
   def validate_oauth_hmac(hmac, data, secret) when is_map(data) do
     data = data |> Enum.sort() |> Enum.map(fn {k, v} -> "#{k}=#{v}" end) |> Enum.join("&")
-    validate_hmac(hmac, data, secret)
+    validate_hmac(hmac, data, secret, &(Base.encode16(&1, case: :lower)))
   end
 
-  def validate_hmac(hmac, data, secret)
+  defp validate_hmac(hmac, data, secret, encode_fun) when is_function(encode_fun, 1)
       when is_binary(hmac) and
       is_binary(data) and
       is_binary(secret) do
-    computed = Base.encode16(:crypto.hmac(:sha256, secret, data), case: :lower)
+    computed = encode_fun.(:crypto.hmac(:sha256, secret, data))
     secure_compare(computed, hmac)
   end
 
